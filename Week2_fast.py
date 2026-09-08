@@ -1,30 +1,53 @@
 import numpy as np
-from sklearn.datasets import make_classification
-from sklearn.model_selection import train_test_split
 
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Input
-from tensorflow.keras.optimizers import SGD
+def sigmoid(z):
+    return 1 / (1 + np.exp(-z))
 
-# STEP 1 - dataset
-x, y = make_classification(n_samples=200, n_features=2, n_redundant=0, random_state=42)
-xtrain, xtest, ytrain, ytest = train_test_split(x, y, test_size=0.2, random_state=42)
+def cost(y, p):
+    return np.mean((y - p) ** 2) / 2
 
-# STEP 2 - logistic regression AS a single-neuron neural network
-model = Sequential()
-model.add(Input(shape=(2,)))
-model.add(Dense(units=1, activation="sigmoid"))  # 1 neuron + sigmoid = logistic regression
+m = int(input("Samples: "))
+n = int(input("Features: "))
 
-# STEP 3 - compile: binary_crossentropy = cost function, SGD = gradient descent update rule
-model.compile(optimizer=SGD(learning_rate=0.1), loss="binary_crossentropy", metrics=["accuracy"])
+X = []
+Y = []
 
-# STEP 4 - train (minimizes cost, updates weights+bias every epoch)
-history = model.fit(xtrain, ytrain, epochs=100, verbose=0)
+for i in range(m):
+    X.append([float(input(f"X{j+1}: ")) for j in range(n)])
+    Y.append(int(input("Target (0/1): ")))
 
-# STEP 5 - results
-loss, acc = model.evaluate(xtest, ytest, verbose=0)
-print("Test Accuracy :", acc)
-print("Final Weights :", model.get_weights()[0].flatten())
-print("Final Bias    :", model.get_weights()[1])
-print("Cost (first 5 epochs):", [round(c, 4) for c in history.history["loss"][:5]])
-print("Cost (last 5 epochs) :", [round(c, 4) for c in history.history["loss"][-5:]])
+X = np.array(X)
+Y = np.array(Y)
+
+W = np.array([float(input(f"W{i+1}: ")) for i in range(n)])
+b = float(input("Bias: "))
+lr = float(input("Learning rate: "))
+tol = float(input("Tolerance: "))
+
+old_cost = float("inf")
+
+for i in range(10000):
+    Z = np.dot(X, W) + b
+    P = sigmoid(Z)
+
+    error = (P - Y) * P * (1 - P)
+    dW = np.dot(X.T, error) / m
+    db = np.mean(error)
+
+    W -= lr * dW
+    b -= lr * db
+
+    new_cost = cost(Y, P)
+
+    if abs(old_cost - new_cost) < tol:
+        break
+    old_cost = new_cost
+
+P = sigmoid(np.dot(X, W) + b)
+prediction = (P >= 0.5).astype(int)
+
+print("\nTraining Completed")
+print("Weights:", W)
+print("Bias:", b)
+print("Cost:", cost(Y, P))
+print("Predicted:", prediction)
