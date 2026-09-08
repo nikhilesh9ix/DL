@@ -1,34 +1,44 @@
 import numpy as np
-from sklearn.datasets import make_moons
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
 
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Input
+def tanh(x):
+    return np.tanh(x)
 
-# STEP 1 - two-class dataset
-x, y = make_moons(n_samples=300, noise=0.2, random_state=42)
-xtrain, xtest, ytrain, ytest = train_test_split(x, y, test_size=0.2, random_state=42)
+def sigmoid(x):
+    return 1/(1+np.exp(-x))
 
-sc = StandardScaler()
-xtrain = sc.fit_transform(xtrain)
-xtest = sc.transform(xtest)
+m=int(input("Samples: "))
+n=int(input("Features: "))
+h=int(input("Hidden neurons: "))
 
-# STEP 2 - single hidden layer, tanh (non-linear), sigmoid output (two-class)
-model = Sequential()
-model.add(Input(shape=(2,)))
-model.add(Dense(units=6, activation="tanh"))   # hidden layer - tanh
-model.add(Dense(units=1, activation="sigmoid"))  # output layer - two-class probability
+X=np.array([[float(input(f"X{j+1}: ")) for j in range(n)] for i in range(m)])
+Y=np.array([int(input("Target: ")) for i in range(m)]).reshape(-1,1)
 
-# STEP 3 - cross-entropy loss, backprop done via Keras optimizer
-model.compile(optimizer="adam", loss="binary_crossentropy", metrics=["accuracy"])
+W1=np.array([float(input(f"W1_{i+1}: ")) for i in range(n*h)]).reshape(n,h)
+W2=np.array([float(input(f"W2_{i+1}: ")) for i in range(h)]).reshape(h,1)
 
-# STEP 4 - train
-history = model.fit(xtrain, ytrain, epochs=60, verbose=0)
+b1=float(input("Bias 1: "))
+b2=float(input("Bias 2: "))
+lr=float(input("Learning rate: "))
 
-# STEP 5 - results
-loss, acc = model.evaluate(xtest, ytest, verbose=0)
-print("Test Accuracy :", acc)
-print("Cross-Entropy Loss (final):", loss)
-print("Loss curve (first 5):", [round(c, 4) for c in history.history["loss"][:5]])
-print("Loss curve (last 5) :", [round(c, 4) for c in history.history["loss"][-5:]])
+for i in range(10000):
+
+    # Forward
+    A1=tanh(np.dot(X,W1)+b1)
+    P=sigmoid(np.dot(A1,W2)+b2)
+
+    # Backpropagation
+    D2=P-Y
+    D1=np.dot(D2,W2.T)*(1-A1**2)
+
+    # Update
+    W2-=lr*np.dot(A1.T,D2)/m
+    b2-=lr*np.mean(D2)
+    W1-=lr*np.dot(X.T,D1)/m
+    b1-=lr*np.mean(D1)
+
+P=sigmoid(np.dot(tanh(np.dot(X,W1)+b1),W2)+b2)
+
+loss=-np.mean(Y*np.log(P+1e-10)+(1-Y)*np.log(1-P+1e-10))
+
+print("Loss:",loss)
+print("Prediction:",(P>=.5).astype(int).ravel())
