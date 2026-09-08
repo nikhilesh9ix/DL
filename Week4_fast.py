@@ -1,34 +1,49 @@
 import numpy as np
-from sklearn.datasets import make_classification
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
 
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Input
+def relu(x):
+    return np.maximum(0,x)
 
-# STEP 1 - classification dataset
-x, y = make_classification(n_samples=400, n_features=10, n_informative=6, random_state=42)
-xtrain, xtest, ytrain, ytest = train_test_split(x, y, test_size=0.2, random_state=42)
+def sigmoid(x):
+    return 1/(1+np.exp(-x))
 
-sc = StandardScaler()
-xtrain = sc.fit_transform(xtrain)
-xtest = sc.transform(xtest)
+m=int(input("Samples: "))
+n=int(input("Features: "))
 
-# STEP 2 - DEEP network: more than one hidden layer, ReLU (non-linear)
-model = Sequential()
-model.add(Input(shape=(10,)))
-model.add(Dense(units=16, activation="relu"))  # hidden layer 1 - ReLU
-model.add(Dense(units=8, activation="relu"))   # hidden layer 2 - ReLU
-model.add(Dense(units=1, activation="sigmoid"))  # output layer
+X=np.array([[float(input(f"X{j+1}: ")) for j in range(n)] for i in range(m)])
+Y=np.array([int(input("Target: ")) for i in range(m)]).reshape(-1,1)
 
-# STEP 3 - compile + train
-model.compile(optimizer="adam", loss="binary_crossentropy", metrics=["accuracy"])
-history = model.fit(xtrain, ytrain, epochs=50, verbose=0)
+h1=int(input("Hidden layer 1: "))
+h2=int(input("Hidden layer 2: "))
+lr=float(input("Learning rate: "))
 
-# STEP 4 - results
-loss, acc = model.evaluate(xtest, ytest, verbose=0)
-print("Test Accuracy :", acc)
-print("Final Loss    :", loss)
-print("Loss curve (first 5):", [round(c, 4) for c in history.history["loss"][:5]])
-print("Loss curve (last 5) :", [round(c, 4) for c in history.history["loss"][-5:]])
-model.summary()
+W1=np.random.randn(n,h1)*.1
+W2=np.random.randn(h1,h2)*.1
+W3=np.random.randn(h2,1)*.1
+b1=np.zeros((1,h1))
+b2=np.zeros((1,h2))
+b3=np.zeros((1,1))
+
+for i in range(10000):
+
+    # Forward
+    A1=relu(np.dot(X,W1)+b1)
+    A2=relu(np.dot(A1,W2)+b2)
+    P=sigmoid(np.dot(A2,W3)+b3)
+
+    # Backpropagation
+    D3=P-Y
+    D2=np.dot(D3,W3.T)*(A2>0)
+    D1=np.dot(D2,W2.T)*(A1>0)
+
+    # Update
+    W3-=lr*np.dot(A2.T,D3)/m
+    b3-=lr*np.mean(D3,axis=0)
+    W2-=lr*np.dot(A1.T,D2)/m
+    b2-=lr*np.mean(D2,axis=0)
+    W1-=lr*np.dot(X.T,D1)/m
+    b1-=lr*np.mean(D1,axis=0)
+
+P=sigmoid(np.dot(relu(np.dot(relu(np.dot(X,W1)+b1),W2)+b2),W3)+b3)
+
+print("Loss:",-np.mean(Y*np.log(P+1e-10)+(1-Y)*np.log(1-P+1e-10)))
+print("Prediction:",(P>=.5).astype(int).ravel())
