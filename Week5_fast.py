@@ -1,38 +1,39 @@
-import numpy as np
-from sklearn.datasets import make_classification
+from sklearn.datasets import make_moons
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
-
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Input
+from tensorflow.keras.layers import Dense
 
-# STEP 1 - any classification dataset
-x, y = make_classification(n_samples=500, n_features=10, random_state=42)
-xtrain, xtest, ytrain, ytest = train_test_split(x, y, test_size=0.2, random_state=42)
+n = int(input("Samples: "))
+noise = float(input("Noise: "))
 
-sc = StandardScaler()
-xtrain = sc.fit_transform(xtrain)
-xtest = sc.transform(xtest)
+X,Y = make_moons(n_samples=n,noise=noise,random_state=42)
 
-# STEP 2 - Logistic Regression
-lr = LogisticRegression().fit(xtrain, ytrain)
-lr_acc = accuracy_score(ytest, lr.predict(xtest))
+X1,X2,Y1,Y2 = train_test_split(X,Y,test_size=.2,random_state=42)
 
-# STEP 3 - Deep Neural Network
-model = Sequential()
-model.add(Input(shape=(10,)))
-model.add(Dense(units=16, activation="relu"))
-model.add(Dense(units=8, activation="relu"))
-model.add(Dense(units=1, activation="sigmoid"))
-model.compile(optimizer="adam", loss="binary_crossentropy", metrics=["accuracy"])
-model.fit(xtrain, ytrain, epochs=50, verbose=0)
+s = StandardScaler()
+X1 = s.fit_transform(X1)
+X2 = s.transform(X2)
 
-dnn_pred = (model.predict(xtest, verbose=0) >= 0.5).astype(int).flatten()
-dnn_acc = accuracy_score(ytest, dnn_pred)
+# Logistic Regression
+lr = LogisticRegression()
+lr.fit(X1,Y1)
+p1 = lr.predict(X2)
 
-# STEP 4 - compare
-print("Logistic Regression Accuracy :", lr_acc)
-print("Deep Neural Network Accuracy :", dnn_acc)
-print("Better Model:", "DNN" if dnn_acc > lr_acc else "Logistic Regression" if lr_acc > dnn_acc else "Tie")
+# Deep Neural Network
+dnn = Sequential([
+    Dense(32,activation="relu",input_shape=(2,)),
+    Dense(16,activation="relu"),
+    Dense(8,activation="relu"),
+    Dense(1,activation="sigmoid")
+])
+
+dnn.compile(optimizer="adam",loss="binary_crossentropy",metrics=["accuracy"])
+dnn.fit(X1,Y1,epochs=100,verbose=0)
+
+p2 = (dnn.predict(X2,verbose=0) >= .5).astype(int).ravel()
+
+print("Logistic Regression Accuracy:",accuracy_score(Y2,p1))
+print("DNN Accuracy:",accuracy_score(Y2,p2))
