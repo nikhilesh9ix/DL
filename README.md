@@ -4,8 +4,6 @@ Lab programs for Weeks 1 to 10, written in simple, plain Python.
 
 | File | Program | Needs typed input? |
 |---|---|---|
-| `Basics_McCulloch_Pitts.py` | McCulloch-Pitts neuron (weighted sum + threshold) | Yes |
-| `Basics_Perceptron.py` | Perceptron learning rule | Yes |
 | `Week01_Normalization_Activation.py` | Normalization + activation functions | Yes |
 | `Week02_Logistic_Regression.py` | Logistic regression with gradient descent | Yes |
 | `Week03_Tanh_Classification.py` | Tanh + cross-entropy (observation logic) | Yes |
@@ -18,14 +16,6 @@ Lab programs for Weeks 1 to 10, written in simple, plain Python.
 | `Week10_Bidirectional_RNN_Sentiment.py` | Bidirectional SimpleRNN on IMDB | No |
 
 ## Practice inputs and expected outputs
-
-**Basics_McCulloch_Pitts.py**
-- Input: `3`, then W = `1, 1, 1`, then threshold `2`.
-- Output: the output is 1 only for rows whose weighted sum is 2 or more.
-
-**Basics_Perceptron.py**
-- Input: `2`, then W = `0, 1`, then bias `0`, learning rate `1`, then targets `0, 1, 1, 1` (OR gate).
-- Output: `Final weights: [1.0, 1.0]`, `Final bias: -1.0`, `Epochs: 3`, `Status: Converged`.
 
 **Week01_Normalization_Activation.py**
 - Input: `3`, then X = `2, 4, 6`, then W = `1, 2, 1`, then bias `1`, normalization `1`, activation `5` (ReLU).
