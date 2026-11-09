@@ -7,10 +7,7 @@ def sigmoid(z):
 m = int(input("Samples: "))
 n = int(input("Features: "))
 
-X = []
-for i in range(m):
-    X.append([float(input(f"X{j+1}: ")) for j in range(n)])
-X = np.array(X)
+X = np.array([[float(input(f"X{j+1}: ")) for j in range(n)] for i in range(m)])
 Y = np.array([int(input("Target: ")) for i in range(m)])
 
 W = np.array([float(input(f"Weight {i+1}: ")) for i in range(n)])
@@ -20,10 +17,8 @@ lr = float(input("Learning rate: "))
 for i in range(10000):
     P = sigmoid(X @ W + b)
     error = (P - Y) * P * (1 - P)
-    dW = X.T @ error / m
-    db = np.mean(error)
-    W -= lr * dW
-    b -= lr * db
+    W -= lr * (X.T @ error / m)
+    b -= lr * np.mean(error)
 
 P = sigmoid(X @ W + b)
 

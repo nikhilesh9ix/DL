@@ -10,10 +10,7 @@ def sigmoid(x):
 m = int(input("Samples: "))
 n = int(input("Features: "))
 
-X = []
-for i in range(m):
-    X.append([float(input(f"X{j+1}: ")) for j in range(n)])
-X = np.array(X)
+X = np.array([[float(input(f"X{j+1}: ")) for j in range(n)] for i in range(m)])
 Y = np.array([int(input("Target: ")) for i in range(m)]).reshape(-1, 1)
 
 h1 = int(input("Hidden layer 1: "))
@@ -51,7 +48,5 @@ A1 = relu(X @ W1 + b1)
 A2 = relu(A1 @ W2 + b2)
 P = sigmoid(A2 @ W3 + b3)
 
-loss = -np.mean(Y * np.log(P + 1e-10) + (1 - Y) * np.log(1 - P + 1e-10))
-
-print("Loss:", loss)
+print("Loss:", -np.mean(Y * np.log(P + 1e-10) + (1 - Y) * np.log(1 - P + 1e-10)))
 print("Prediction:", (P >= 0.5).astype(int).ravel())

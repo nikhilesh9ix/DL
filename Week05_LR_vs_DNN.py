@@ -17,9 +17,7 @@ X_train = scaler.fit_transform(X_train)
 X_test = scaler.transform(X_test)
 
 # Logistic Regression
-lr_model = LogisticRegression()
-lr_model.fit(X_train, y_train)
-lr_pred = lr_model.predict(X_test)
+lr_pred = LogisticRegression().fit(X_train, y_train).predict(X_test)
 
 # Deep Neural Network
 model = Sequential([

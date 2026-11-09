@@ -11,8 +11,8 @@ z = sum(x[i] * w[i] for i in range(n)) + b
 print("0.None 1.MinMax01 2.MinMax(-1,1) 3.Zscore 4.Decimal")
 c = int(input("Normalization: "))
 
-xmin = min(x)
-xmax = max(x)
+xmin, xmax = min(x), max(x)
+xn = x
 
 if c == 1:
     xn = [(v - xmin) / (xmax - xmin) for v in x]
@@ -26,8 +26,6 @@ elif c == 4:
     biggest = max(abs(v) for v in x)
     j = len(str(int(biggest)))
     xn = [v / 10 ** j for v in x]
-else:
-    xn = x
 
 zn = sum(xn[i] * w[i] for i in range(n)) + b
 

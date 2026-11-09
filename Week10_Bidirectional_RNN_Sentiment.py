@@ -5,12 +5,10 @@ from tensorflow.keras.datasets import imdb
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 
 (X_train, y_train), (X_test, y_test) = imdb.load_data(num_words=10000)
-X_train = X_train[:5000]
+X_train = pad_sequences(X_train[:5000], maxlen=100)
+X_test = pad_sequences(X_test[:1000], maxlen=100)
 y_train = y_train[:5000]
-X_test = X_test[:1000]
 y_test = y_test[:1000]
-X_train = pad_sequences(X_train, maxlen=100)
-X_test = pad_sequences(X_test, maxlen=100)
 
 model = Sequential([
     layers.Embedding(10000, 32, mask_zero=True),
@@ -28,14 +26,8 @@ print("Test Accuracy:", round(acc * 100, 2), "%")
 
 predictions = model.predict(X_test[:10], verbose=0)
 for i in range(10):
-    if predictions[i][0] >= 0.5:
-        predicted = "Positive"
-    else:
-        predicted = "Negative"
-    if y_test[i] == 1:
-        actual = "Positive"
-    else:
-        actual = "Negative"
+    predicted = "Positive" if predictions[i][0] >= 0.5 else "Negative"
+    actual = "Positive" if y_test[i] == 1 else "Negative"
     print(f"Review {i+1}: Predicted={predicted}, Actual={actual}")
 
 plt.plot(history.history["accuracy"], label="Training")

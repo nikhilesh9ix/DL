@@ -4,14 +4,10 @@ from tensorflow.keras import layers, models
 from tensorflow.keras.datasets import mnist
 
 (X_train, y_train), (X_test, y_test) = mnist.load_data()
-X_train = X_train[:10000]
+X_train = X_train[:10000].reshape(-1, 28, 28, 1) / 255.0
+X_test = X_test[:2000].reshape(-1, 28, 28, 1) / 255.0
 y_train = y_train[:10000]
-X_test = X_test[:2000]
 y_test = y_test[:2000]
-X_train = X_train / 255.0
-X_test = X_test / 255.0
-X_train = X_train.reshape(-1, 28, 28, 1)
-X_test = X_test.reshape(-1, 28, 28, 1)
 
 def residual_block(x, filters, stride=1):
     shortcut = x
@@ -24,8 +20,7 @@ def residual_block(x, filters, stride=1):
         shortcut = layers.Conv2D(filters, 1, strides=stride, padding="same")(shortcut)
         shortcut = layers.BatchNormalization()(shortcut)
     x = layers.Add()([x, shortcut])
-    x = layers.ReLU()(x)
-    return x
+    return layers.ReLU()(x)
 
 inputs = layers.Input(shape=(28, 28, 1))
 x = layers.Conv2D(16, 3, padding="same")(inputs)
@@ -49,8 +44,7 @@ loss, acc = model.evaluate(X_test, y_test, verbose=0)
 print("Test Loss:", round(loss, 4))
 print("Test Accuracy:", round(acc * 100, 2), "%")
 
-predictions = model.predict(X_test[:10], verbose=0)
-predicted = predictions.argmax(axis=1)
+predicted = model.predict(X_test[:10], verbose=0).argmax(axis=1)
 for i in range(10):
     plt.subplot(2, 5, i + 1)
     plt.imshow(X_test[i].reshape(28, 28), cmap="gray")
