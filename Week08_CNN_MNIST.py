@@ -12,74 +12,35 @@ print(tf.nn.max_pool2d(feature, 2, 2, "VALID").numpy()[0, :, :, 0])
 print("Average Pooling:")
 print(tf.nn.avg_pool2d(feature, 2, 2, "VALID").numpy()[0, :, :, 0])
 
-# Convolution demo: simple 7x7 grayscale image
-image = np.array([
-    [0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 1, 1, 1, 0, 0],
-    [0, 0, 1, 1, 1, 0, 0],
-    [0, 0, 1, 1, 1, 0, 0],
-    [0, 0, 1, 1, 1, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0]
-], dtype=np.float32)
-image = image.reshape(1, 7, 7, 1)
+# Convolution demo: 7x7 black image with a white block
+image = np.zeros((1, 7, 7, 1), dtype=np.float32)
+image[0, 1:5, 2:5, 0] = 1
 
-# Three kernels
-vertical_edge = np.array([
-    [-1, 0, 1],
-    [-1, 0, 1],
-    [-1, 0, 1]
-], dtype=np.float32).reshape(3, 3, 1, 1)
+kernels = {
+    "Vertical Edge": [[-1, 0, 1], [-1, 0, 1], [-1, 0, 1]],
+    "Horizontal Edge": [[-1, -1, -1], [0, 0, 0], [1, 1, 1]],
+    "Sharpening": [[0, -1, 0], [-1, 5, -1], [0, -1, 0]]
+}
 
-horizontal_edge = np.array([
-    [-1, -1, -1],
-    [0, 0, 0],
-    [1, 1, 1]
-], dtype=np.float32).reshape(3, 3, 1, 1)
-
-sharpen = np.array([
-    [0, -1, 0],
-    [-1, 5, -1],
-    [0, -1, 0]
-], dtype=np.float32).reshape(3, 3, 1, 1)
-
-# Convolution
-vertical_output = tf.nn.conv2d(image, vertical_edge, strides=1, padding="SAME")
-horizontal_output = tf.nn.conv2d(image, horizontal_edge, strides=1, padding="SAME")
-sharpen_output = tf.nn.conv2d(image, sharpen, strides=1, padding="SAME")
-
-# Show results
 plt.figure(figsize=(12, 3))
-
 plt.subplot(1, 4, 1)
 plt.imshow(image[0, :, :, 0], cmap="gray")
 plt.title("Original Image")
 plt.axis("off")
-
-plt.subplot(1, 4, 2)
-plt.imshow(vertical_output[0, :, :, 0], cmap="gray")
-plt.title("Vertical Edge")
-plt.axis("off")
-
-plt.subplot(1, 4, 3)
-plt.imshow(horizontal_output[0, :, :, 0], cmap="gray")
-plt.title("Horizontal Edge")
-plt.axis("off")
-
-plt.subplot(1, 4, 4)
-plt.imshow(sharpen_output[0, :, :, 0], cmap="gray")
-plt.title("Sharpening")
-plt.axis("off")
-
+for i, name in enumerate(kernels):
+    kernel = np.array(kernels[name], dtype=np.float32).reshape(3, 3, 1, 1)
+    output = tf.nn.conv2d(image, kernel, strides=1, padding="SAME")
+    plt.subplot(1, 4, i + 2)
+    plt.imshow(output[0, :, :, 0], cmap="gray")
+    plt.title(name)
+    plt.axis("off")
 plt.tight_layout()
 plt.show()
 
 # MNIST data
 (X_train, y_train), (X_test, y_test) = mnist.load_data()
-X_train = X_train / 255.0
-X_test = X_test / 255.0
-X_train = X_train.reshape(-1, 28, 28, 1)
-X_test = X_test.reshape(-1, 28, 28, 1)
+X_train = X_train.reshape(-1, 28, 28, 1) / 255.0
+X_test = X_test.reshape(-1, 28, 28, 1) / 255.0
 
 # CNN model
 model = Sequential([
